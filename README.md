@@ -9,4 +9,4 @@ Software and packages to run the pipeline :
 
 Installation: No installation required
 
-Demo and Instructions for use: Raw sequencing data and the processed data table required for running the pipeline are deposited in the European Nucleotide Archive (ENA) as part of the study PRJEB107723. Needed scripts and datasets are located in each folder and properly commented.
+Demo and Instructions for use: Raw sequencing data and the processed data table required for running the pipeline are deposited in the European Nucleotide Archive (ENA) as part of the study PRJEB107723. Scripts and datasets needed are located in each folder and properly commented.
