@@ -224,27 +224,7 @@ ggsave(heatmap_1, path=path, file="heatmap_median_ddG.pdf", width=15, height=3)
 
 
 
-#
-scatterddG_4<-ggplot(NS_ddG_ripk1_median, 
-                     aes(x=median_ddG_9HR6_pos, y=median_ddG_9HR9_pos, label=Residue))+
-  geom_vline(xintercept=2, linetype="dashed", color="grey80")+
-  geom_vline(xintercept=0, color="grey50")+
-  geom_hline(yintercept=2, linetype="dashed", color="grey80")+
-  geom_hline(yintercept=0, color="grey50")+
-  geom_point(aes(color=ddG_class, shape=orientation), size=4)+
-  scale_x_break(c(15, 30))+
-  scale_color_manual(values=c("red3", "green4", "black"))+
-  geom_text_repel(min.segment.length = 0.1)+
-  stat_cor()+ 
-  theme_classic()+
-  theme()
 
-scatterddG_4
-
-ggsave(scatterddG_4, path=path, file="ddG_9HR6vs9HR9_residues.jpg", width=6, height=4)
-ggsave(scatterddG_4, path=path, file="ddG_9HR6vs9HR9_residues.pdf", width=6, height=4)
-
-#
 #
 scatterddG_4_<-ggplot(NS_ddG_ripk1_median[!NS_ddG_ripk1_median$Residue %in% c("G538", "G542"),], 
                       aes(x=median_ddG_9HR6_pos, y=median_ddG_9HR9_pos, label=Residue))+
@@ -283,26 +263,6 @@ NS_ddG_ripk1_median$orientation<-"exposed"
 NS_ddG_ripk1_median[NS_ddG_ripk1_median$Pos %in% c(531, 533, 539, 540, 541, 543, 545, 547, 549), "orientation"]<-"buried"
 NS_ddG_ripk1_median[NS_ddG_ripk1_median$Pos %in% c(538, 542), "orientation"]<-"glycine"
 NS_ddG_ripk1_median[NS_ddG_ripk1_median$Pos %in% c(535, 536, 543), "orientation"]<-"flipped"
-
-scatterddG_5<-ggplot(NS_ddG_ripk1_median, 
-                     aes(x=median_ddG_9HR6_pos, y=median_ddG_8Z93_pos, label=Residue))+
-  geom_vline(xintercept=2, linetype="dashed", color="grey80")+
-  geom_vline(xintercept=0, color="grey50")+
-  geom_hline(yintercept=2, linetype="dashed", color="grey80")+
-  geom_hline(yintercept=0, color="grey50")+
-  geom_point(aes(color=ddG_class, shape=factor(orientation, levels=c("buried", "exposed", "glycine", "flipped"))), size=4)+
-  scale_x_break(c(15, 30))+
-  scale_color_manual(values=c("red3", "green4", "black"))+
-  geom_text_repel(min.segment.length = 0.1)+
-  stat_cor()+ 
-  labs(shape="orientation")+
-  theme_classic()+
-  theme()
-
-scatterddG_5
-
-ggsave(scatterddG_5, path=path, file="ddG_9HR6vs8Z93_residues.jpg", width=6, height=4)
-ggsave(scatterddG_5, path=path, file="ddG_9HR6vs8Z93_residues.pdf", width=6, height=4)
 
 #
 scatterddG_5_<-ggplot(NS_ddG_ripk1_median[!NS_ddG_ripk1_median$Residue %in% c("G538", "G542"),], 
@@ -346,27 +306,7 @@ NS_ddG_ripk1_median[NS_ddG_ripk1_median$Pos %in% c(531, 533, 539, 540, 541, 543,
 NS_ddG_ripk1_median[NS_ddG_ripk1_median$Pos %in% c(538, 542), "orientation"]<-"glycine"
 NS_ddG_ripk1_median[NS_ddG_ripk1_median$Pos %in% c(535, 536, 543), "orientation"]<-"flipped"
 
-scatterddG_6<-ggplot(NS_ddG_ripk1_median, 
-                     aes(x=median_ddG_9HR9_pos, y=median_ddG_8Z93_pos, label=Residue))+
-  geom_vline(xintercept=2, linetype="dashed", color="grey80")+
-  geom_vline(xintercept=0, color="grey50")+
-  geom_hline(yintercept=2, linetype="dashed", color="grey80")+
-  geom_hline(yintercept=0, color="grey50")+
-  geom_point(aes(color=ddG_class, shape=factor(orientation, levels=c("buried", "exposed", "glycine", "flipped"))), size=4)+
-  scale_color_manual(values=c("red3", "green4", "black"))+
-  scale_x_break(c(10, 20)) + 
-  geom_text_repel(min.segment.length = 0.1)+
-  stat_cor()+ 
-  labs(shape="orientation")+
-  theme_classic()+
-  theme()
 
-scatterddG_6
-
-ggsave(scatterddG_6, path=path, file="ddG_9HR9vs8Z93_residues.jpg", width=6, height=4)
-ggsave(scatterddG_6, path=path, file="ddG_9HR9vs8Z93_residues.pdf", width=6, height=4)
-
-#
 #
 scatterddG_6_<-ggplot(NS_ddG_ripk1_median[!NS_ddG_ripk1_median$Residue %in% c("G538", "G542"),], 
                       aes(x=median_ddG_9HR9_pos, y=median_ddG_8Z93_pos, label=Residue))+
