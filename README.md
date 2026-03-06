@@ -1,6 +1,6 @@
 # Systematic mutational mapping reveals optimal amyloid formation for RIPK function
 
-Pipeline to replicate the analysis and figures in: 
+Pipeline to replicate the analysis and figures in: https://www.biorxiv.org/content/10.64898/2026.02.19.706818v1 
 
 System requirements
 Software and packages to run the pipeline :
