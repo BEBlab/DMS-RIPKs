@@ -460,7 +460,8 @@ ggsave(scatter_12, file="ddG_8Z94_Maetal2025.pdf", width=4, height=4, path=path)
 # 4: ddG vs NS with mtuants from literature
 
 #CD = cell death
-CD_dec<-c("V-450-E", "V-460-E", "L-466-E", "V-460-P", "V-458-P", "G-457-D", "V-458-E", "G-461-Y")
+CD_dec<-c("V-450-E", "V-460-E", "L-466-E", "V-460-P", "V-458-P", "G-457-D", 
+          "V-458-E", "G-461-Y", "N-464-I", "V-450-H", "L-466-E", "N-464-H")
 CD_WT<-c("N-464-D", "M-468-D")
 CD_freq<-c("P-448-L", "V-450-I", "V-460-I", "R-447-Q")
 

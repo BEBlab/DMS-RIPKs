@@ -7,6 +7,10 @@ setwd("")
 dir.create("04_mRIP3vsTheOthers")
 path="04_mRIP3vsTheOthers"
 
+# Create a folder for the figures
+dir.create("04_mRIP3vsTheOthers")
+path="04_mRIP3vsTheOthers"
+
 # Load ripk3 data
 load("nscore_df_hRIPK3.RData")
 
@@ -144,6 +148,7 @@ p_bars<-ggplot(corr_text, aes(x=factor(sequence, levels=c("vsRIPK3", "vsRIPK1", 
   geom_text(data=corr_text, aes(label=significance_pos), vjust=0.4, size=8, colour="black")+
   geom_text(data=corr_text, aes(label=significance_neg), vjust=1, size=8, colour="black")+
   theme_void()+
+  ylim(0,1)+
   labs(x="", y="Pearson Correlation")+
   theme_classic()
 

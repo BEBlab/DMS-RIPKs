@@ -116,6 +116,10 @@ correlation_rhim<-cor.test(singles_ripk3m3[singles_ripk3m3$RHIM == TRUE,]$nscore
 correlation_out<-cor.test(singles_ripk3m3[singles_ripk3m3$RHIM == FALSE,]$nscore_c_ripk3, 
                           singles_ripk3m3[singles_ripk3m3$RHIM == FALSE,]$nscore_c_mRIP3, use="complete.obs", method="pearson")
 
+# BH correction
+correlation_rhim_padjusted<-p.adjust(c(correlation_rhim$p.value, correlation_out$p.value) , method = "BH")[1]
+correlation_out_padjusted<-p.adjust(c(correlation_rhim$p.value, correlation_out$p.value) , method = "BH")[2]
+
 p_corr_all<-ggplot(singles_ripk3m3, aes(x=nscore_c_ripk3, y=nscore_c_mRIP3))+
   geom_hline(yintercept = 0, color="black", linewidth=.2)+
   geom_vline(xintercept = 0, color="black", linewidth=.2)+
@@ -127,9 +131,9 @@ p_corr_all<-ggplot(singles_ripk3m3, aes(x=nscore_c_ripk3, y=nscore_c_mRIP3))+
   annotate("text", label=paste0("R=", round(correlation_all$estimate,2)), x=-Inf, y=Inf, hjust=-0.1, vjust=1, size=3, color="black")+
   annotate("text", label=paste0("p=", format(correlation_all$p.value, digits = 2, scientific = T)), x=-Inf, y=Inf, hjust=-0.2, vjust=2, size=3, color="black")+
   annotate("text", label=paste0("R=", round(correlation_rhim$estimate,2)), x=-Inf, y=Inf,hjust=-0.1, vjust=3, size=3, color="coral")+
-  annotate("text", label=paste0("p=", format(correlation_rhim$p.value, digits = 2, scientific = T)), x=-Inf, y=Inf,hjust=-0.2, vjust=4, size=3, color="coral")+
+  annotate("text", label=paste0("p=", format(correlation_rhim_padjusted, digits = 2, scientific = T)), x=-Inf, y=Inf,hjust=-0.2, vjust=4, size=3, color="coral")+
   annotate("text", label=paste0("R=", round(correlation_out$estimate,2)), x=-Inf, y=Inf,hjust=-0.1, vjust=5, size=3, color="grey60")+
-  annotate("text", label=paste0("p=", format(correlation_out$p.value, digits = 2, scientific = T)), x=-Inf, y=Inf,hjust=-0.2, vjust=6, size=3, color="grey60")+
+  annotate("text", label=paste0("p=", format(correlation_out_padjusted, digits = 2, scientific = T)), x=-Inf, y=Inf,hjust=-0.2, vjust=6, size=3, color="grey60")+
   labs(x="Nucleation Score RIPK3", y="Nucleation Score mRIP3")
 
 p_corr_all
@@ -153,6 +157,8 @@ colnames(corr_text)<-c("Pos", "corr","pvalue")
 for(i in c(2:3)){corr_text[[i]]<-as.numeric(as.character(corr_text[[i]]))}
 corr_text<-distinct(corr_text, Pos, .keep_all = TRUE)
 
+# BH correction
+corr_text$pvalue_adjusted<-p.adjust(corr_text$pvalue, method = "BH")
 
 ###
 p_corr_pos<-ggplot(singles_ripk3m3, aes(x=nscore_c_ripk3, y=nscore_c_mRIP3))+
@@ -167,7 +173,7 @@ p_corr_pos<-ggplot(singles_ripk3m3, aes(x=nscore_c_ripk3, y=nscore_c_mRIP3))+
   theme(panel.grid = element_blank(),
         plot.title = element_text(hjust = 0.5))+
   geom_text(data=corr_text, aes(label=paste0("R=",round(corr, 2)), x=-Inf, y=Inf), hjust=0, vjust=1.5, size=3, colour="red")+
-  geom_text(data=corr_text, aes(label=paste0("p=", format(pvalue, digits = 2, scientific = T)), x=-Inf, y=Inf), hjust=-0.05, vjust=3, size=3, colour="red")+
+  geom_text(data=corr_text, aes(label=paste0("p=", format(pvalue_adjusted, digits = 2, scientific = T)), x=-Inf, y=Inf), hjust=-0.05, vjust=3, size=3, colour="red")+
   geom_text(data=singles_ripk3m3, aes(label=residue_ripk3, x=-Inf, y=-Inf, color="orange"), hjust=-0.2, vjust=-0.5)+
   geom_text(data=singles_ripk3m3, aes(label=residue_mRIP3, x=Inf, y=-Inf, color="brown"), hjust=1.1, vjust=-0.5)+
   scale_color_manual(name = "Residue", labels = c("Mouse", "Human"), values=c("brown", "orange"))+
@@ -180,12 +186,14 @@ ggsave(p_corr_pos, file="Corr_singles_nscore_poseach_ripk3_mRIP3.jpg", width = 1
 corr_text[is.na(corr_text)]<-1
 
 corr_text$significance_pos<-""
-corr_text[(corr_text$pvalue<0.05) & (corr_text$corr>0), "significance_pos"]<-"*"
-corr_text[(corr_text$pvalue<0.01) & (corr_text$corr>0), "significance_pos"]<-"**"
+corr_text[(corr_text$pvalue_adjusted<0.05) & (corr_text$corr>0), "significance_pos"]<-"*"
+corr_text[(corr_text$pvalue_adjusted<0.01) & (corr_text$corr>0), "significance_pos"]<-"**"
+corr_text[(corr_text$pvalue_adjusted<0.001) & (corr_text$corr>0), "significance_pos"]<-"***"
 
 corr_text$significance_neg<-""
-corr_text[(corr_text$pvalue<0.05) & (corr_text$corr<0), "significance_neg"]<-"*"
-corr_text[(corr_text$pvalue<0.01) & (corr_text$corr<0), "significance_neg"]<-"**"
+corr_text[(corr_text$pvalue_adjusted<0.05) & (corr_text$corr<0), "significance_neg"]<-"*"
+corr_text[(corr_text$pvalue_adjusted<0.01) & (corr_text$corr<0), "significance_neg"]<-"**"
+corr_text[(corr_text$pvalue_adjusted<0.001) & (corr_text$corr<0), "significance_pos"]<-"***"
 
 peptide_seq<-'NPMTGPPALVFNNCSEVQIGNYNSLVAPPRTTAS'
 peptide_seq<-c(strsplit(peptide_seq, '')[[1]])
@@ -237,4 +245,3 @@ p_corr_all<-ggplot(singles_ripk3m3, aes(x=mean_ns_ripk3, y=mean_ns_mRIP3))+
 p_corr_all
 
 ggsave(p_corr_all, file="Corr_singles_nscore_aachange_ripk3_mRIP3.jpg", width = 5, height = 4, path=path)
-
