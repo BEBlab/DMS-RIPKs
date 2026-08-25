@@ -462,7 +462,7 @@ ggsave(scatter_12, file="ddG_8Z94_Maetal2025.pdf", width=4, height=4, path=path)
 #CD = cell death
 CD_dec<-c("V-450-E", "V-460-E", "L-466-E", "V-460-P", "V-458-P", "G-457-D", 
           "V-458-E", "G-461-Y", "N-464-I", "V-450-H", "L-466-E", "N-464-H")
-CD_WT<-c("N-464-D", "M-468-D")
+CD_WT<-c("N-464-D", "M-468-D", "D-462-A", "L-449-A", "M-468-A", "L-466-Y", "Y-465-V", "I-452-S", "G-457-V")
 CD_freq<-c("P-448-L", "V-450-I", "V-460-I", "R-447-Q")
 
 NS_ddG_RIPK3$CD<-""
@@ -476,10 +476,14 @@ NS_ddG_RIPK3[NS_ddG_RIPK3$ID %in% CD_freq, "AF"]<-"AF>1e-05"
 NS_ddG_RIPK3$ID_reported<-""
 NS_ddG_RIPK3[NS_ddG_RIPK3$CD != "", "ID_reported"]<-NS_ddG_RIPK3[NS_ddG_RIPK3$CD != "", "ID"]
 
+NS_ddG_RIPK3$class<-"no_data"
+NS_ddG_RIPK3[NS_ddG_RIPK3$CD ==  "Decreased", "class"]<- "Decreased"
+NS_ddG_RIPK3[NS_ddG_RIPK3$CD ==  "WT-like", "class"]<- "WT-like"
+NS_ddG_RIPK3[NS_ddG_RIPK3$CD ==  "AF>1e-05", "class"]<- "WT-like"
+
 scatter_13<-ggplot(NS_ddG_RIPK3, aes(x=nscore_c, y=ddG_foldx_7DAC, label=ID_reported))+
-  geom_hline(yintercept=2, size=.1)+
-  geom_vline(xintercept=max(NS_ddG_RIPK3[NS_ddG_RIPK3$category_1 == "NS_dec",]$nscore_c, na.rm = T), size=.1)+
-  geom_vline(xintercept=min(NS_ddG_RIPK3[NS_ddG_RIPK3$category_1 == "NS_inc",]$nscore_c, na.rm = T), size=.1)+
+  geom_hline(yintercept=0, size=.1)+
+  geom_vline(xintercept=0, size=.1)+
   geom_point(data=NS_ddG_RIPK3[NS_ddG_RIPK3$ID_reported == "",], alpha=0.3, color="grey60")+
   geom_point(data=NS_ddG_RIPK3[NS_ddG_RIPK3$ID_reported != "",], aes(color=CD, shape=AF), size=2)+
   geom_text_repel(max.overlaps = 100)+
@@ -490,31 +494,61 @@ scatter_13<-ggplot(NS_ddG_RIPK3, aes(x=nscore_c, y=ddG_foldx_7DAC, label=ID_repo
 
 scatter_13
 
-ggsave(scatter_13, file="ddG_7DAC_NS_CD.jpg", width=5, height=4, path=path)
-ggsave(scatter_13, file="ddG_7DAC_NS_CD.pdf", width=5, height=4, path=path)
+ggsave(scatter_13, file="ddG_7DAC_NS_CD_all.jpg", width=5, height=4, path=path)
+ggsave(scatter_13, file="ddG_7DAC_NS_CD_all.pdf", width=5, height=4, path=path)
 
-### chisquare test
-#NS_ddG_RIPK3<-drop_na(NS_ddG_RIPK3)
-NS_ddG_RIPK3$sweet_spot_7DAC<-F
-NS_ddG_RIPK3[(NS_ddG_RIPK3$category_1_7DAC != "ddG_dec" & 
-              NS_ddG_RIPK3$category_1 == "WT-like"),
-              "sweet_spot_7DAC"]<-T
+###
+# Let's measure the distance of all the dots to the origin
 
-NS_ddG_RIPK3$class<-"no_data"
-NS_ddG_RIPK3[NS_ddG_RIPK3$CD == "Decreased", "class"]<-"Decreased"
-NS_ddG_RIPK3[NS_ddG_RIPK3$CD %in% c("WT-like", "AF>1e-05"), "class"]<-"WT-like"
+#NS_ddG_RIPK3<-NS_ddG_RIPK3 %>% drop_na(Pos)
+# measure the length of the vector to the origin
+distance_to_origin <- function(x, y){
+  distance <- sqrt(x^2 + y^2)
+  return(distance)
+}
 
-# Count occurrences
-contingency_table <- NS_ddG_RIPK3[NS_ddG_RIPK3$class != "no_data",] %>%
-  count(sweet_spot_7DAC, class) %>%
-  pivot_wider(names_from = class, values_from = n, values_fill = 0) %>%
-  column_to_rownames(var = "sweet_spot_7DAC")  # Convert `SweetSpot` to row names
-contingency_table
+# iterate over the dataframe rows
+# get the nscore_c (x) and ddG_foldx (y)
+# calculates the distance to the origin
+# store it in the column
+for (i in 1:nrow(NS_ddG_RIPK3)){
+  nscore_c<-NS_ddG_RIPK3[i, "nscore_c"]
+  ddG_foldx_7DAC<-NS_ddG_RIPK3[i, "ddG_foldx_7DAC"]
+  distance<-distance_to_origin(nscore_c, ddG_foldx_7DAC)
+  NS_ddG_RIPK3[i, "distance_to_origin_7DAC"]<-distance
+}
 
-NS_ddG_RIPK3[NS_ddG_RIPK3$class != "no_data", c("ID", "category_1_7DAC", "category_1", "sweet_spot_7DAC", "class")]
-# Perform Chi-squared test
-chisq_result <- chisq.test(contingency_table)
-print(chisq_result)
+# Histogram of the distances to the origin
+
+p_hist <- ggplot(NS_ddG_RIPK3[NS_ddG_RIPK3$class != "no_data",], 
+                 aes(x=distance_to_origin_7DAC, fill=factor(class, levels=c("WT-like", "Decreased"))))+
+  #geom_histogram(bins=100)+
+  geom_density(alpha=0.5)+
+  scale_fill_manual(values=c("grey20","red3"), guide="none")+
+  labs(x="Distance to origin", y="Density")+
+  theme_classic()
+p_hist
+
+ggsave(p_hist, file="Necroptosis_class_hist_7DAC_all.jpg", width = 4, height = 4, path=path)
+ggsave(p_hist, file="Necroptosis_class_hist_7DAC_all.pdf", width = 4, height = 4, path=path)
+
+
+# compare the distributions with Kolmogorov-Smirnov Test
+ks_result<-ks.test(NS_ddG_RIPK3[NS_ddG_RIPK3$class == "WT-like", "distance_to_origin_7DAC"], 
+                   NS_ddG_RIPK3[NS_ddG_RIPK3$class == "Decreased", "distance_to_origin_7DAC"])
+
+p_ecdf<-ggplot(NS_ddG_RIPK3[NS_ddG_RIPK3$class!="no_data",], 
+               aes(x=distance_to_origin_7DAC, color=factor(class, levels=c("WT-like", "Decreased")))) +
+  stat_ecdf(size=1)+
+  annotate("text", x=15, y=0.1, label="Kolmogorov-Smirnov Test")+
+  annotate("text", x=15, y=0.02, label=paste("p-value:", round(ks_result$p.value, 2)))+
+  scale_color_manual("Cell Death", values=c("grey20","red3"))+
+  labs(x="Distance to origin", y="ECDF")+
+  theme_classic()
+p_ecdf
+
+ggsave(p_ecdf, file="Necroptosis_class_ecdf_7DAC_all.jpg", width = 6, height = 4, path=path)
+ggsave(p_ecdf, file="Necroptosis_class_ecdf_7DAC_all.pdf", width = 6, height = 4, path=path)
 
 # Heatmap # sweet-spot
 scatter_14<-ggplot(NS_ddG_RIPK3, aes(x=nscore_c, y=ddG_foldx_7DAC))+
@@ -528,11 +562,11 @@ scatter_14
 ggsave(scatter_14, file="ddG_7DAC_NS_sweetspot.jpg", width=4, height=4, path=path)
 ggsave(scatter_14, file="ddG_7DAC_NS_sweetspot.pdf", width=4, height=4, path=path)
 
+
 ##
 scatter_15<-ggplot(NS_ddG_RIPK3, aes(x=nscore_c, y=ddG_foldx_7DA4, label=ID_reported))+
-  geom_hline(yintercept=2, size=.1)+
-  geom_vline(xintercept=max(NS_ddG_RIPK3[NS_ddG_RIPK3$category_1 == "NS_dec",]$nscore_c, na.rm = T), size=.1)+
-  geom_vline(xintercept=min(NS_ddG_RIPK3[NS_ddG_RIPK3$category_1 == "NS_inc",]$nscore_c, na.rm = T), size=.1)+
+  geom_hline(yintercept=0, size=.1)+
+  geom_vline(xintercept=0, size=.1)+
   geom_point(data=NS_ddG_RIPK3[NS_ddG_RIPK3$ID_reported == "",], alpha=0.3, color="grey60")+
   geom_point(data=NS_ddG_RIPK3[NS_ddG_RIPK3$ID_reported != "",], aes(color=CD, shape=AF), size=2)+
   geom_text_repel(max.overlaps = 100)+
@@ -543,14 +577,57 @@ scatter_15<-ggplot(NS_ddG_RIPK3, aes(x=nscore_c, y=ddG_foldx_7DA4, label=ID_repo
 
 scatter_15
 
-ggsave(scatter_15, file="ddG_7DA4_NS_CD.jpg", width=5, height=4, path=path)
-ggsave(scatter_15, file="ddG_7DA4_NS_CD.pdf", width=5, height=4, path=path)
+ggsave(scatter_15, file="ddG_7DA4_NS_CD_all.jpg", width=5, height=4, path=path)
+ggsave(scatter_15, file="ddG_7DA4_NS_CD_all.pdf", width=5, height=4, path=path)
+
+# iterate over the dataframe rows
+# get the nscore_c (x) and ddG_foldx (y)
+# calculates the distance to the origin
+# store it in the column
+for (i in 1:nrow(NS_ddG_RIPK3)){
+  nscore_c<-NS_ddG_RIPK3[i, "nscore_c"]
+  ddG_foldx_7DA4<-NS_ddG_RIPK3[i, "ddG_foldx_7DA4"]
+  distance<-distance_to_origin(nscore_c, ddG_foldx_7DA4)
+  NS_ddG_RIPK3[i, "distance_to_origin_7DA4"]<-distance
+}
+
+# Histogram of the distances to the origin
+
+p_hist <- ggplot(NS_ddG_RIPK3[NS_ddG_RIPK3$class!="no_data",], 
+                 aes(x=distance_to_origin_7DA4, fill=factor(class, levels=c("WT-like", "Decreased"))))+
+  #geom_histogram(bins=100)+
+  geom_density(alpha=0.5)+
+  scale_fill_manual(values=c("grey20","red3"), guide="none")+
+  labs(x="Distance to origin", y="Density")+
+  theme_classic()
+p_hist
+
+ggsave(p_hist, file="Necroptosis_class_hist_7DA4_all.jpg", width = 4, height = 4, path=path)
+ggsave(p_hist, file="Necroptosis_class_hist_7DA4_all.pdf", width = 4, height = 4, path=path)
+
+
+# compare the distributions with Kolmogorov-Smirnov Test
+ks_result<-ks.test(NS_ddG_RIPK3[NS_ddG_RIPK3$class == "WT-like", "distance_to_origin_7DA4"], 
+                   NS_ddG_RIPK3[NS_ddG_RIPK3$class == "Decreased", "distance_to_origin_7DA4"])
+
+p_ecdf<-ggplot(NS_ddG_RIPK3[NS_ddG_RIPK3$class!="no_data",], 
+               aes(x=distance_to_origin_7DA4, color=factor(class, levels=c("WT-like", "Decreased")))) +
+  stat_ecdf(size=1)+
+  annotate("text", x=15, y=0.1, label="Kolmogorov-Smirnov Test")+
+  annotate("text", x=15, y=0.02, label=paste("p-value:", round(ks_result$p.value, 2)))+
+  scale_color_manual("Cell Death", values=c("grey20","red3"))+
+  labs(x="Distance to origin", y="ECDF")+
+  theme_classic()
+p_ecdf
+
+ggsave(p_ecdf, file="Necroptosis_class_ecdf_7DA4_all.jpg", width = 6, height = 4, path=path)
+ggsave(p_ecdf, file="Necroptosis_class_ecdf_7DA4_all.pdf", width = 6, height = 4, path=path)
+
 
 ##
 scatter_16<-ggplot(NS_ddG_RIPK3, aes(x=nscore_c, y=ddG_foldx_8Z94, label=ID_reported))+
-  geom_hline(yintercept=2, size=.1)+
-  geom_vline(xintercept=max(NS_ddG_RIPK3[NS_ddG_RIPK3$category_1 == "NS_dec",]$nscore_c, na.rm = T), size=.1)+
-  geom_vline(xintercept=min(NS_ddG_RIPK3[NS_ddG_RIPK3$category_1 == "NS_inc",]$nscore_c, na.rm = T), size=.1)+
+  geom_hline(yintercept=0, size=.1)+
+  geom_vline(xintercept=0, size=.1)+
   geom_point(data=NS_ddG_RIPK3[NS_ddG_RIPK3$ID_reported == "",], alpha=0.3, color="grey60")+
   geom_point(data=NS_ddG_RIPK3[NS_ddG_RIPK3$ID_reported != "",], aes(color=CD, shape=AF), size=2)+
   geom_text_repel(max.overlaps = 100)+
@@ -561,5 +638,49 @@ scatter_16<-ggplot(NS_ddG_RIPK3, aes(x=nscore_c, y=ddG_foldx_8Z94, label=ID_repo
 
 scatter_16
 
-ggsave(scatter_16, file="ddG_8Z94_NS_CD.jpg", width=5, height=4, path=path)
-ggsave(scatter_16, file="ddG_8Z94_NS_CD.pdf", width=5, height=4, path=path)
+ggsave(scatter_16, file="ddG_8Z94_NS_CD_all.jpg", width=5, height=4, path=path)
+ggsave(scatter_16, file="ddG_8Z94_NS_CD_all.pdf", width=5, height=4, path=path)
+
+
+# iterate over the dataframe rows
+# get the nscore_c (x) and ddG_foldx (y)
+# calculates the distance to the origin
+# store it in the column
+for (i in 1:nrow(NS_ddG_RIPK3)){
+  nscore_c<-NS_ddG_RIPK3[i, "nscore_c"]
+  ddG_foldx_8Z94<-NS_ddG_RIPK3[i, "ddG_foldx_8Z94"]
+  distance<-distance_to_origin(nscore_c, ddG_foldx_8Z94)
+  NS_ddG_RIPK3[i, "distance_to_origin_8Z94"]<-distance
+}
+
+# Histogram of the distances to the origin
+
+p_hist <- ggplot(NS_ddG_RIPK3[NS_ddG_RIPK3$class!="no_data",], 
+                 aes(x=distance_to_origin_8Z94, fill=factor(class, levels=c("WT-like", "Decreased"))))+
+  #geom_histogram(bins=100)+
+  geom_density(alpha=0.5)+
+  scale_fill_manual(values=c("grey20","red3"), guide="none")+
+  labs(x="Distance to origin", y="Density")+
+  theme_classic()
+p_hist
+
+ggsave(p_hist, file="Necroptosis_class_hist_8Z94_all.jpg", width = 4, height = 4, path=path)
+ggsave(p_hist, file="Necroptosis_class_hist_8Z94_all.pdf", width = 4, height = 4, path=path)
+
+
+# compare the distributions with Kolmogorov-Smirnov Test
+ks_result<-ks.test(NS_ddG_RIPK3[NS_ddG_RIPK3$class == "WT-like", "distance_to_origin_8Z94"], 
+                   NS_ddG_RIPK3[NS_ddG_RIPK3$class == "Decreased", "distance_to_origin_8Z94"])
+
+p_ecdf<-ggplot(NS_ddG_RIPK3[NS_ddG_RIPK3$class!="no_data",], 
+               aes(x=distance_to_origin_8Z94, color=factor(class, levels=c("WT-like", "Decreased")))) +
+  stat_ecdf(size=1)+
+  annotate("text", x=15, y=0.1, label="Kolmogorov-Smirnov Test")+
+  annotate("text", x=15, y=0.02, label=paste("p-value:", round(ks_result$p.value, 2)))+
+  scale_color_manual("Cell Death", values=c("grey20","red3"))+
+  labs(x="Distance to origin", y="ECDF")+
+  theme_classic()
+p_ecdf
+
+ggsave(p_ecdf, file="Necroptosis_class_ecdf_8Z94_all.jpg", width = 6, height = 4, path=path)
+ggsave(p_ecdf, file="Necroptosis_class_ecdf_8Z94_all.pdf", width = 6, height = 4, path=path)

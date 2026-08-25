@@ -516,7 +516,7 @@ ggsave(path=path, scatter_ddg_7DA4, file="ddG_cellsurvival_7DA4.pdf", width=4, h
 load("ddG_8Z94.RData")
 
 ddG_foldx_8Z94$sig_1_8Z94<-F
-ddG_foldx_8Z94[ddG_foldx_8Z94$p.adjust_8Z94<0.01, "sig_1_7DA4"]<-T
+ddG_foldx_8Z94[ddG_foldx_8Z94$p.adjust_8Z94<0.01, "sig_1_8Z94"]<-T
 
 ddG_foldx_8Z94$category_1_8Z94<-"WT-like"
 ddG_foldx_8Z94[ddG_foldx_8Z94$p.adjust_8Z94<0.01 & ddG_foldx_8Z94$ddG_foldx_8Z94 >2, "category_1_8Z94"]<-"ddG_inc"
