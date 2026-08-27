@@ -191,7 +191,7 @@ corr_text[(corr_text$pvalue_adjusted<0.001) & (corr_text$corr>0), "significance_
 corr_text$significance_neg<-""
 corr_text[(corr_text$pvalue_adjusted<0.05) & (corr_text$corr<0), "significance_neg"]<-"*"
 corr_text[(corr_text$pvalue_adjusted<0.01) & (corr_text$corr<0), "significance_neg"]<-"**"
-corr_text[(corr_text$pvalue_adjusted<0.001) & (corr_text$corr<0), "significance_pos"]<-"***"
+corr_text[(corr_text$pvalue_adjusted<0.001) & (corr_text$corr<0), "significance_neg"]<-"***"
 
 peptide_seq<-'NPMTGPPALVFNNCSEVQIGNYNSLVAPPRTTAS'
 peptide_seq<-c(strsplit(peptide_seq, '')[[1]])
